@@ -14,6 +14,8 @@ module.exports = (on: Cypress.PluginEvents, config: Cypress.PluginConfigOptions)
 
   config.env.username = process.env.TEST_USERNAME;
   config.env.password = process.env.TEST_PASSWORD;
+  config.env.cluster = process.env.TEST_CLUSTER;
+  config.env.system_domain = process.env.TEST_SYSTEM_DOMAIN
 
   return config;
 };

@@ -7,19 +7,21 @@ Cypress.config();
 describe('Namespace testing', () => {
   const topLevelMenu = new TopLevelMenu();
   const epinio = new Epinio();
+  const app_name = new String("testapp");
 
   beforeEach(() => {
     cy.login();
     cy.visit('/home');
     topLevelMenu.openIfClosed();
     epinio.epinioIcon().should('exist');
-    epinio.accessEpinioMenu('gkejulien'); 
+    epinio.accessEpinioMenu(Cypress.env('cluster'));
     // Make sure the Epinio nav menu is correct
     epinio.checkEpinioNav()
   });
   
   it('Create namespace', () => {
     cy.contains('Namespaces').click();
+    cy.get('.m-0').should('contain', 'Namespaces');
     // Adding cy.wait to make the test passed with headless mode
     // Could be improved
     //cy.wait(2000);
@@ -35,8 +37,9 @@ describe('Namespace testing', () => {
   it('Push an app into mynamespace', () => {
     // Should be a function later
     cy.contains('Applications').click();
+    cy.get('.m-0').should('contain', 'Applications');
     cy.contains('Create').click();
-    cy.get('.input-string > .labeled-input').type('testapp');
+    cy.get('.input-string > .labeled-input').type(app_name);
     cy.contains('Next').click();
     // Upload the test app
     cy.get('input[type="file"]').attachFile({filePath: 'sample-app.tar.gz', encoding: 'base64', mimeType: 'application/octet-stream'});
@@ -50,23 +53,26 @@ describe('Namespace testing', () => {
     cy.get('.controls-row').contains('Done').click();
     // Should be another function to check an app
     // Make sure the app is in running state
-    cy.get('.primaryheader', {timeout: 5000}).should('contain', 'testapp').and('contain', 'Running');
+    cy.get('.primaryheader', {timeout: 5000}).should('contain', app_name).and('contain', 'Running');
     // Make sure all app instances are up
-    cy.get('.numbers', {timeout: 30000}).should('contain', '100%');
+    cy.get('.numbers', {timeout: 60000}).should('contain', '100%');
     cy.contains('Namespace: mynamespace').should('be.visible');
-    cy.contains('https://testapp.julien.aws.howdoi.website').should('be.visible');
+    var prefix_url = "https://";
+    var app_url = prefix_url.concat(app_name, ".", Cypress.env('system_domain'));
+    cy.contains(app_url).should('be.visible');
     // Other checks can be added
   });
 
   it('Delete namespace', () => {
     cy.contains('Namespaces').click();
+    cy.get('.m-0').should('contain', 'Namespaces');
     cy.contains('mynamespace').click();
     cy.contains('Delete').click();
     cy.get('#confirm').type('mynamespace');
     cy.get('.card-container').contains('Delete').click();
-    cy.contains('mynamespace', {timeout: 20000}).should('not.exist');
+    cy.contains('mynamespace', {timeout: 60000}).should('not.exist');
     // Make sure the app is also deleted
     cy.contains('Applications').click();
-    cy.contains('testapp').should('not.exist');
+    cy.contains(app_name).should('not.exist');
   });
 });
