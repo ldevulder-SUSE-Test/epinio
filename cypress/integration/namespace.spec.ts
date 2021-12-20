@@ -1,5 +1,3 @@
-import { contains } from 'cypress/types/jquery';
-import { exists } from 'fs';
 import { TopLevelMenu } from '~/cypress/integration/util/toplevelmenu';
 import { Epinio } from '~/cypress/integration/util/epinio';
 
@@ -16,7 +14,7 @@ describe('Namespace testing', () => {
     epinio.epinioIcon().should('exist');
     epinio.accessEpinioMenu(Cypress.env('cluster'));
     // Make sure the Epinio nav menu is correct
-    epinio.checkEpinioNav()
+    epinio.checkEpinioNav();
   });
   
   it('Create namespace', () => {

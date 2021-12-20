@@ -42,10 +42,10 @@ Cypress.Commands.add('createApp', (appName:string) => {
 });
 
 Cypress.Commands.add('checkApp', (appName:string) => {
-  cy.get(':nth-child(1) > .col-badge-state-formatter > .badge-state').should('contain', 'Success').should('be.visible');
-  cy.get(':nth-child(2) > .col-badge-state-formatter > .badge-state').should('contain', 'Success').should('be.visible');
-  cy.get(':nth-child(3) > .col-badge-state-formatter > .badge-state', {timeout:120000}).should('contain', 'Success').should('be.visible');
-  cy.get(':nth-child(4) > .col-badge-state-formatter > .badge-state', {timeout:120000}).should('contain', 'Success').should('be.visible');
+  cy.get(':nth-child(1) > .col-badge-state-formatter').should('contain', 'Success').should('be.visible');
+  cy.get(':nth-child(2) > .col-badge-state-formatter').should('contain', 'Success').should('be.visible');
+  cy.get(':nth-child(3) > .col-badge-state-formatter', {timeout:120000}).should('contain', 'Success').should('be.visible');
+  cy.get(':nth-child(4) > .col-badge-state-formatter', {timeout:120000}).should('contain', 'Success').should('be.visible');
   cy.get('.controls-row').contains('Done').click();
   // Make sure the app is in running state
   cy.get('.primaryheader', {timeout: 5000}).should('contain', appName).and('contain', 'Running');
