@@ -1,0 +1,5 @@
+{
+  "experimentalSessionSupport": true,
+  "testFiles":"*.spec.ts",
+  "defaultCommandTimeout": 6000
+}

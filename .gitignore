@@ -16,3 +16,16 @@ personal-setup
 /resources
 acceptance/acceptance.test
 .vscode
+# Dependency directories
+node_modules/
+jspm_packages/
+# Optional npm cache directory
+.npm
+# Optional eslint cache
+.eslintcache
+# Optional REPL history
+.node_repl_history
+# Cypress e2e testing
+cypress/videos
+cypress/screenshots
+yarn.lock
