@@ -28,6 +28,7 @@ const (
 
 type deployParam struct {
 	models.AppRef
+	// TODO 1224 HELM: chart url - set from constant initially
 	ImageURL    string
 	Username    string
 	Instances   int32
@@ -118,6 +119,12 @@ func (hc Controller) Deploy(c *gin.Context) apierror.APIErrors {
 	if err != nil {
 		return apierror.InternalError(err, "preparing ImageURL registry for use by Kubernetes")
 	}
+
+	// TODO 1224 HELM: Install application release from generic chart + config
+	// TODO 1224 HELM: Drop coded app deployment	(instances, env, bound services, stageid, user)
+	// TODO 1224 HELM: Drop coded app service
+	// TODO 1224 HELM: Drop coded app ingresses	(routes)
+	// TODO 1224 HELM: NOTE: Owner references!
 
 	deployment := newAppDeployment(req.Stage.ID, deployParams)
 	deployment.SetOwnerReferences([]metav1.OwnerReference{owner})

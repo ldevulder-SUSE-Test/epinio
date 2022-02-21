@@ -232,6 +232,9 @@ func Delete(ctx context.Context, cluster *kubernetes.Cluster, appRef models.AppR
 		return err
 	}
 
+	// TODO 1224 HELM: Uninstall application release
+	// NOTE 1224 HELM: Staging resources (jobs, pods, pvc) kept handled directly!
+
 	// delete application resource, will cascade and delete deployment,
 	// ingress, service and certificate, environment variables, bindings
 	err = client.Namespace(appRef.Namespace).Delete(ctx, appRef.Name, metav1.DeleteOptions{})
