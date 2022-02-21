@@ -62,6 +62,9 @@ func (hc Controller) Update(c *gin.Context) apierror.APIErrors { // nolint:gocyc
 	// TODO: Can we optimize to perform a single restart regardless of what changed ?!
 	// TODO: Should we ?
 
+	// TODO 1224 HELM: Restart via helm upgrade. See Scale/EnvironmentChange/BoundServicesChange/Restart
+	// TODO 1224 HELM: Effectively a re-deployment, and helm/kube handle the details of restarting whatever.
+
 	if updateRequest.Instances != nil {
 		desired := *updateRequest.Instances
 

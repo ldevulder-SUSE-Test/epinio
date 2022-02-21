@@ -57,6 +57,8 @@ func (hc Controller) Set(c *gin.Context) apierror.APIErrors {
 		return apierror.InternalError(err)
 	}
 
+	// TODO 1224 HELM: Restart via helm upgrade
+
 	if app.Workload != nil {
 		varNames, err := application.EnvironmentNames(ctx, cluster, app.Meta)
 		if err != nil {

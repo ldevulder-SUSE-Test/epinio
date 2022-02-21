@@ -97,6 +97,8 @@ func (b AppServiceBindList) ToMountsArray() []corev1.VolumeMount {
 // services. This enables incremental modification of the deployment (add, remove affected, instead of wholsesale
 // replacement).
 func (a *Workload) BoundServicesChange(ctx context.Context, userName string, oldServices NameSet, newServices services.ServiceList) error {
+	// TODO 1224 HELM: Restart via helm upgrade. Maybe in caller? Remove this function?
+
 	_, err := Get(ctx, a.cluster, a.app)
 	if err != nil {
 		// Should not happen. Application was validated to exist
@@ -202,6 +204,8 @@ func (a *Workload) BoundServicesChange(ctx context.Context, userName string, old
 // environment variables, not the values, as the import is internally
 // done as pod env specifications using secret key references.
 func (a *Workload) EnvironmentChange(ctx context.Context, varNames []string) error {
+	// TODO 1224 HELM: Restart via helm upgrade. Maybe in caller? Remove this function?
+
 	return retry.RetryOnConflict(retry.DefaultRetry, func() error {
 		// Retrieve the latest version of Deployment before attempting update
 		// RetryOnConflict uses exponential backoff to avoid exhausting the apiserver
@@ -264,6 +268,8 @@ func (a *Workload) EnvironmentChange(ctx context.Context, varNames []string) err
 // Scale changes the number of instances (replicas) for the
 // application's Deployment.
 func (a *Workload) Scale(ctx context.Context, instances int32) error {
+	// TODO 1224 HELM: Restart via helm upgrade. Maybe in caller? Remove this function?
+
 	return retry.RetryOnConflict(retry.DefaultRetry, func() error {
 		// Retrieve the latest version of Deployment before attempting update
 		// RetryOnConflict uses exponential backoff to avoid exhausting the apiserver
@@ -284,6 +290,8 @@ func (a *Workload) Scale(ctx context.Context, instances int32) error {
 // Restart triggers a restart of the deployed app. Forcing it to reload things from
 // external resources (like services).
 func (a *Workload) Restart(ctx context.Context) error {
+
+	// TODO 1224 HELM: Restart via helm upgrade - TODO: Expose annotation through values.yaml
 
 	path := "/spec/template/metadata/annotations/epinio.suse.org~1restart"
 	value := fmt.Sprintf("%d", time.Now().UnixNano())
