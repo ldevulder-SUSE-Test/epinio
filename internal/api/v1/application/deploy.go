@@ -13,6 +13,7 @@ import (
 	"github.com/epinio/epinio/internal/api/v1/response"
 	"github.com/epinio/epinio/internal/application"
 	"github.com/epinio/epinio/internal/cli/server/requestctx"
+	"github.com/epinio/epinio/internal/helm"
 	"github.com/epinio/epinio/internal/helmchart"
 	"github.com/epinio/epinio/internal/names"
 	"github.com/epinio/epinio/internal/registry"
@@ -25,18 +26,6 @@ const (
 	DefaultInstances = int32(1)
 	LocalRegistry    = "127.0.0.1:30500/apps"
 )
-
-type deployParam struct {
-	models.AppRef
-	// TODO 1224 HELM: chart url - set from constant initially
-	ImageURL    string
-	Username    string
-	Instances   int32
-	Stage       models.StageRef
-	Owner       metav1.OwnerReference
-	Environment models.EnvVariableList
-	Services    application.AppServiceBindList
-}
 
 // Deploy handles the API endpoint /namespaces/:namespace/applications/:app/deploy
 // It creates the deployment, service and ingress (kube) resources for the app
@@ -103,10 +92,11 @@ func (hc Controller) Deploy(c *gin.Context) apierror.APIErrors {
 		return apierror.InternalError(err, "failed to process application's bound services")
 	}
 
-	deployParams := deployParam{
+	deployParams := helm.ChartParameters{
 		AppRef:      req.App,
+		Chart:       helm.StandardChart,
 		Owner:       owner,
-		Environment: environment.List(),
+		Environment: environment,
 		Services:    bindings,
 		Instances:   instances,
 		ImageURL:    req.ImageURL,
@@ -125,6 +115,11 @@ func (hc Controller) Deploy(c *gin.Context) apierror.APIErrors {
 	// TODO 1224 HELM: Drop coded app service
 	// TODO 1224 HELM: Drop coded app ingresses	(routes)
 	// TODO 1224 HELM: NOTE: Owner references!
+
+	err = helm.Deploy(deployParams)
+	if err != nil {
+		return apierror.InternalError(err)
+	}
 
 	deployment := newAppDeployment(req.Stage.ID, deployParams)
 	deployment.SetOwnerReferences([]metav1.OwnerReference{owner})
@@ -189,7 +184,7 @@ func (hc Controller) Deploy(c *gin.Context) apierror.APIErrors {
 }
 
 // newAppDeployment is a helper that creates the kube deployment resource for the app
-func newAppDeployment(stageID string, deployParams deployParam) *appsv1.Deployment {
+func newAppDeployment(stageID string, deployParams helm.ChartParameters) *appsv1.Deployment {
 	automountServiceAccountToken := true
 	labels := map[string]string{
 		"app.kubernetes.io/name":       deployParams.Name,
@@ -240,7 +235,7 @@ func newAppDeployment(stageID string, deployParams deployParam) *appsv1.Deployme
 									ContainerPort: 8080,
 								},
 							},
-							Env:          deployParams.Environment.ToEnvVarArray(deployParams.AppRef),
+							Env:          deployParams.Environment.List().ToEnvVarArray(deployParams.AppRef),
 							VolumeMounts: deployParams.Services.ToMountsArray(),
 						},
 					},
