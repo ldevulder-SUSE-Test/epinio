@@ -92,6 +92,16 @@ func (b AppServiceBindList) ToMountsArray() []corev1.VolumeMount {
 	return mounts
 }
 
+func (b AppServiceBindList) ToNames() []string {
+	names := []string{}
+
+	for _, binding := range b {
+		names = append(names, binding.service)
+	}
+
+	return names
+}
+
 // BoundServicesChange imports the currently bound services into the deployment. It takes a ServiceList, not just
 // names, as it has to create/retrieve the associated service binding secrets. It further takes a set of the old
 // services. This enables incremental modification of the deployment (add, remove affected, instead of wholsesale

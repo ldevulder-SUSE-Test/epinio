@@ -9,7 +9,7 @@ import (
 
 	"github.com/epinio/epinio/internal/application"
 	"github.com/epinio/epinio/pkg/api/core/v1/models"
-	// hc "github.com/mittwald/go-helm-client"
+	hc "github.com/mittwald/go-helm-client"
 )
 
 const (
@@ -41,12 +41,7 @@ func Deploy(parameters ChartParameters) error {
 
 	serviceNames := "~"
 	if len(parameters.Services) > 0 {
-		names := []string{}
-		for _, bound := range parameters.Services {
-			names = append(names, bound.service)
-		}
-
-		serviceNames = fmt.Sprintf(`["%s"]`, strings.Join(nNames, `","`))
+		serviceNames = fmt.Sprintf(`["%s"]`, strings.Join(parameters.Services.ToNames(), `","`))
 	}
 
 	yamlParameters := fmt.Sprintf(`
@@ -75,7 +70,12 @@ epinio:
 		ValuesYaml:  yamlParameters,
 	}
 
-	if _, err := hc.InstallOrUpgradeChart(context.Background(), &chartSpec); err != nil {
+	client, err := hc.New(&hc.Options{})
+	if err != nil {
+		return err
+	}
+
+	if _, err := client.InstallOrUpgradeChart(context.Background(), &chartSpec); err != nil {
 		return err
 	}
 
