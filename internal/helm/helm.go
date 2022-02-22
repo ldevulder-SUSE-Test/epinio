@@ -1,7 +1,6 @@
 package helm
 
 import (
-	"context"
 	"fmt"
 	"strings"
 
@@ -13,7 +12,10 @@ import (
 )
 
 const (
-	StandardChart = ""
+	StandardChart = "https://github.com/epinio/helm-charts/releases/download/epinio-application-0.1.1/epinio-application-0.1.1.tgz"
+	// ChartName:   "/path/to/stable/etcd-operator",			Local directory
+	// ChartName:   "/path/to/stable/etcd-operator.tar.gz",			Local archive
+	// ChartName:   "http://helm.whatever.com/repo/etcd-operator.tar.gz",	Remote archive
 )
 
 type ChartParameters struct {
@@ -31,8 +33,6 @@ type ChartParameters struct {
 
 func Deploy(parameters ChartParameters) error {
 
-	// TODO 1224 HELM : chart parameters (replicas, image, ...)
-	// TODO 1224 HELM : process environment
 	// TODO 1224 HELM : process routes
 	//
 	// YAML string - TODO ? Use unstructured as intermediary to
@@ -44,6 +44,11 @@ func Deploy(parameters ChartParameters) error {
 		serviceNames = fmt.Sprintf(`["%s"]`, strings.Join(parameters.Services.ToNames(), `","`))
 	}
 
+	environment := "~"
+	if len(parameters.Environment) > 0 {
+		environment = fmt.Sprintf(`{ %s }`, strings.Join(parameters.Environment.List().Assignments(), ","))
+	}
+
 	yamlParameters := fmt.Sprintf(`
 epinio:
   replicaCount: %[1]d
@@ -52,7 +57,7 @@ epinio:
   imageURL: "%[4]s"
   username: "%[5]s"
   routes: ~
-  env: ~
+  env: %[7]s
   services: %[6]s
 `, parameters.Instances,
 		parameters.Owner.UID,
@@ -60,6 +65,7 @@ epinio:
 		parameters.ImageURL,
 		parameters.Username,
 		serviceNames,
+		environment,
 	)
 
 	chartSpec := hc.ChartSpec{
@@ -70,14 +76,27 @@ epinio:
 		ValuesYaml:  yamlParameters,
 	}
 
-	client, err := hc.New(&hc.Options{})
+	client, err := hc.New(&hc.Options{
+		Namespace:        parameters.Namespace, // Match chart spec
+		RepositoryCache:  "/tmp/.helmcache",    // Hopefully reduces chart downloads.
+		RepositoryConfig: "/tmp/.helmrepo",     // s.a.
+	})
 	if err != nil {
 		return err
 	}
 
-	if _, err := client.InstallOrUpgradeChart(context.Background(), &chartSpec); err != nil {
+	fmt.Printf("\nZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ\n")
+
+	resolved, err := client.TemplateChart(&chartSpec)
+	if err != nil {
 		return err
 	}
+
+	fmt.Printf("ZZZ_______________________________\n%s_______________________________ZZZZ\n\n", string(resolved))
+
+	// if _, err := client.InstallOrUpgradeChart(context.Background(), &chartSpec); err != nil {
+	// 	return err
+	// }
 
 	return nil
 }

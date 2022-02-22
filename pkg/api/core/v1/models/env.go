@@ -1,6 +1,7 @@
 package models
 
 import (
+	"fmt"
 	"sort"
 
 	v1 "k8s.io/api/core/v1"
@@ -101,4 +102,14 @@ func (evl EnvVariableList) StagingEnvArray() []v1.EnvVar {
 	}
 
 	return stagingVariables
+}
+
+func (evl EnvVariableList) Assignments() []string {
+	assignments := []string{}
+
+	for _, ev := range evl {
+		assignments = append(assignments, fmt.Sprintf(`"%s":"%s"`, ev.Name, ev.Value))
+	}
+
+	return assignments
 }

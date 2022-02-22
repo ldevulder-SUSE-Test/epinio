@@ -101,6 +101,7 @@ func (hc Controller) Deploy(c *gin.Context) apierror.APIErrors {
 		Instances:   instances,
 		ImageURL:    req.ImageURL,
 		Username:    username,
+		Stage:       req.Stage,
 	}
 
 	log.Info("deploying app", "namespace", namespace, "app", req.App)
